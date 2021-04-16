@@ -29,7 +29,7 @@ namespace back_end.Controllers
         [HttpGet] // responderá a la URL 'api/generos'
         [HttpGet("listado")] // >> regla de ruteo, que responderá a la URL 'api/generos/listado'
         [HttpGet("/listadogeneros")] // >> regla de ruteo, que responderá a la URL 'https://localhost:44315/listadogeneros' (debido al / inicial, que no hace falta todo el Route)
-        public List<Genero> Get()
+        public ActionResult<List<Genero>> Get()
         {
             return repositorio.ObtenerTodosLosGeneros();
         }
@@ -38,13 +38,13 @@ namespace back_end.Controllers
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
         // {id} indica que estamos configurando una variable en la URL. 
         [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
-        public Genero Get(int Id)
+        public ActionResult<Genero> Get(int Id)
         {
             var genero = repositorio.ObtenerPorId(Id);
 
             if (genero == null)
             {
-                // return NotFound(); // para utilizar esta llamada, hay que heredar de la Class 'ControllerBase'
+                return NotFound(); // para utilizar esta llamada, hay que heredar de la Class 'ControllerBase'
             }
 
             return genero;
@@ -52,16 +52,16 @@ namespace back_end.Controllers
 
 
         [HttpPost]
-        public void Post()
+        public ActionResult Post()
         {
-
+            return NoContent();
         }
 
 
         [HttpPut]
-        public void Put()
+        public ActionResult Put()
         {
-
+            return NoContent();
         }
 
 
