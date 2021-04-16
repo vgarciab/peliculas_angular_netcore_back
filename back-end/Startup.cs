@@ -1,3 +1,4 @@
+using back_end.Repositorios;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,6 +27,7 @@ namespace back_end
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IRepositorio, RepositorioEnMemoria>();  // >> Inyección de dependencias.
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
