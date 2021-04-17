@@ -11,9 +11,10 @@ namespace back_end.Controllers
 {
     // También se puede escribir el endpoint como: Route("api/[controller]")
     // Si, como en este endpoint, hay dos acciones con el mismo nombre, Get() en este caso, se deben emplear las 
-    // reglas de ruteo (en la Web Api, ruteo por atributo: [ApiController]), que nos permiten mapear una URL con una acción.
+    // reglas de ruteo (en la Web Api, ruteo por atributo) que nos permiten mapear una URL con una acción.
 
     [Route("api/generos")] // > La ruta del endpoint (Por convención, la ruta de los endpoints comienzan con la 'api/')
+    [ApiController] // con este atributo, se controlan las reglas de validación (devuelve los errores a quien hizo Request) de una manera ¡transparente!
     public class GenerosController: ControllerBase
     {
         private readonly IRepositorio repositorio;
@@ -41,10 +42,12 @@ namespace back_end.Controllers
         [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
         public async Task<ActionResult<Genero>> Get(int Id, [BindRequired, FromHeader] string nombre)
         {
+            /* Esta comprobación (que se tendría que repetir en todos los métodos del endpoint) ya no es necesaria cuando se incluye [ApiController] >>
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState); // >> Retorna a la petición un 'error 400' para indicar al usuario qué reglas de validación no ha cumplido
             }
+            */
 
 
             var genero = await repositorio.ObtenerPorId(Id);
