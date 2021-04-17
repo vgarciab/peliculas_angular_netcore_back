@@ -38,9 +38,9 @@ namespace back_end.Controllers
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
         // {id} indica que estamos configurando una variable en la URL. 
         [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
-        public ActionResult<Genero> Get(int Id)
+        public async Task<ActionResult<Genero>> Get(int Id)
         {
-            var genero = repositorio.ObtenerPorId(Id);
+            var genero = await repositorio.ObtenerPorId(Id);
 
             if (genero == null)
             {
