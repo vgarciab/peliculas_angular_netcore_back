@@ -1,6 +1,7 @@
 ﻿using back_end.Entidades;
 using back_end.Repositorios;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,8 +39,14 @@ namespace back_end.Controllers
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
         // {id} indica que estamos configurando una variable en la URL. 
         [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
-        public async Task<ActionResult<Genero>> Get(int Id)
+        public async Task<ActionResult<Genero>> Get(int Id, [BindRequired, FromHeader] string nombre)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // >> Retorna a la petición un 'error 400' para indicar al usuario qué reglas de validación no ha cumplido
+            }
+
+
             var genero = await repositorio.ObtenerPorId(Id);
 
             if (genero == null)
@@ -52,14 +59,14 @@ namespace back_end.Controllers
 
 
         [HttpPost]
-        public ActionResult Post()
+        public ActionResult Post([FromBody] Genero genero)
         {
             return NoContent();
         }
 
 
         [HttpPut]
-        public ActionResult Put()
+        public ActionResult Put([FromBody] Genero genero)
         {
             return NoContent();
         }
