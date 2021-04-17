@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace back_end.Validaciones
 {
+    // Validación por atributo de campo
     public class PrimeraLetraMayusculaAttribute: ValidationAttribute
     {
 
