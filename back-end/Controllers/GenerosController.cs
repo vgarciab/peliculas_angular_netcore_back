@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace back_end.Controllers
 {
@@ -22,23 +23,21 @@ namespace back_end.Controllers
     public class GenerosController: ControllerBase
     {
         private readonly ILogger<GenerosController> logger;
+        private readonly AplicationDbContext context;
 
-        public GenerosController(ILogger<GenerosController> logger)
+        public GenerosController(ILogger<GenerosController> logger, AplicationDbContext context)
         {
             this.logger = logger;
+            this.context = context;
         }
 
         // Acción(es) que va a responder cuando se le haga una petición http al endpoint, el configurado en Route(..)
 
         // Podemos tener varias anotaciones por acción
         [HttpGet] // responderá a la URL 'api/generos'
-        public ActionResult<List<Genero>> Get()
+        public async Task<ActionResult<List<Genero>>> Get()
         {
-            return new List<Genero>()
-            {
-                new Genero(){Id = 1, Nombre = "Comedia" },
-                new Genero(){Id = 2, Nombre = "Acción" }
-            };
+            return await context.Generos.ToListAsync();
         }
 
 
@@ -53,9 +52,11 @@ namespace back_end.Controllers
 
 
         [HttpPost]
-        public ActionResult Post([FromBody] Genero genero)
+        public async Task<ActionResult> Post([FromBody] Genero genero)
         {
-            throw new NotImplementedException();
+            context.Add(genero);
+            await context.SaveChangesAsync();
+            return NoContent();
         }
 
 
