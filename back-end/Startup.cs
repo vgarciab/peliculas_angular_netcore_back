@@ -1,6 +1,5 @@
 using back_end.Controllers;
 using back_end.Filtros;
-using back_end.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,36 +31,7 @@ namespace back_end
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddResponseCaching(); // Activar el caché en nuestra aplicación.
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-
-
-            // Existen tres tipos de vida o ciclos de vida que puede tener un servicio:
-            //   -> (Add)Transient, es el tiempo más corte de vida que le podemos dar a un servicio, y significa que cada vez que pidamos, por ejemplo,
-            //            una instancia del servicio de 'IRepositorio', vamos a tener una nueva estancia de este RepositorioEnMemoria>() (una instancia distinta).
-            //            Siempre retorna una nueva instancia.  
-            //   -< (Add)Scope, el tiempo de vida de la clase instanciada va a ser durante toda la petición HTTP. ES decir, que si  distintas clases solicitan
-            //            el mismo servicio, y ésto lo hacen dentro del mismo contexto HTTP, se les vsa a servir la misma instancia
-            //   -> (Add)Singleton, el cual sirve para indicar que el tiempo de vida de la instancia RepositorioEnMemoria>() del servicio, v a ser
-            //            durante todo el t. de ejecución de la aplicación, lo que quiere decir que distintos clientes van a compartir la misma instancia de la
-            //            clase RepositorioEnMemoria>(). Siempre devolverá el mismo valor (guid, etc...). Si *no* se quiere compartir instancias entre distintos 
-            //            usuarios, *NO* se debe utilizar Singleton.
-            //            Con Singleton definido como Service, si por ejemplo añandimos (POST) al un nuevo registro al ojeto género, al
-            //            recuperar la lista con GET, veremos los géneros que teníamos más el o los que vayamos añadiendo; estamos compartiendo
-            //            la instancia del repositorio en memoria y por eso los cambios o inserviones que se hagan con POST se verán reflejados con GET.
-            //            Este comportamiento sería el más parecido al de una base de datos en la vida real.
-            
-
-
-
-            // services.AddTransient<IRepositorio, RepositorioEnMemoria>();  // >> Transient. Inyección de dependencias.
-            services.AddSingleton<IRepositorio, RepositorioEnMemoria>();  // >> Singleton. Inyección de dependencias.
-            // services.AddScoped<IRepositorio, RepositorioEnMemoria>();  // >> Singleton. Inyección de dependencias.
-            services.AddScoped<WeatherForecastController>(); // --> Modo de inyectar una clase que no tiene Inteface
-            services.AddTransient<MiFiltroDeAccion>(); // -->Inyección de dependencias.
-
-
             services.AddControllers(options =>
             {
                 // Filtro de excepción registrado a nivel global de nuestra aplicación.
@@ -76,67 +46,25 @@ namespace back_end
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        // Esta es nuestra tubería de procesos (HTTP pipeline)
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
+        // Esta es nuestra tubería de procesos (HTTP pipeline) que contiene uno o más middlewares
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Cada uno los métodos de app. es un middleware. El orden en que aparecen es  importante, puesto que un middleware envía info al siguiente
-            //  (es decir, son procesos encadenados) 
-            // Los middleware que empiezan por 'Use...', no detienen el proceso
-
-
-            // >>> INI. A modo de ejemplo, vamos a guardar en un Log todas las peticiones HTTP realizadas por los clientes: 
-            //          Es decir, estamos aquí utilizando nuestro propio middleware para mostrar en la consola todas las respuestas HTTP de nuestra aplicación.
-            app.Use(async (context, next) =>
-            {
-                using (var swapStream = new MemoryStream())
-                {
-                    var respuestaOriginal = context.Response.Body;
-                    context.Response.Body = swapStream;
-
-                    await next.Invoke();
-
-                    swapStream.Seek(0, SeekOrigin.Begin);
-                    string respuesta = new StreamReader(swapStream).ReadToEnd();
-                    swapStream.Seek(0, SeekOrigin.Begin);
-
-                    await swapStream.CopyToAsync(respuestaOriginal);
-                    context.Response.Body = respuestaOriginal;
-
-                    logger.LogInformation(respuesta);
-                }
-            });
-            // <<< FIN. A modo de ejemplo, vamos a guardar en un Log todas las peticiones HTTP realizadas por los clientes: 
-
-            app.Map("/mapa1", (app) => // Con esto estamos utizando branching; ejecutar el middleware si el usuario accede a una URL o endpoint específico (p.e.)
-            {
-                // Si entra aquí, en este endpoint: (https://localhost:44315/mapa1), se está interceptando el pipilene (o tubería de procesos)
-                app.Run(async context =>
-                {
-                    
-                    await context.Response.WriteAsync("Estoy interceptando el pipeline");
-                    // Una vez ejecutado este middleware, se termina el pipeline(con ello el programa) y los siguientes middleware no son ejecutados.
-                });
-            });
-
-
             if (env.IsDevelopment())
-            {  // Si estamosen desarrollo, utilizamos estos tres middleware en nuestra tubería de procesos.
-                app.UseDeveloperExceptionPage();  // -> Este es un middleware
-                app.UseSwagger(); // -> Este es otro middleware
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "back_end v1")); // -> Este es otro middleware
+            {  
+                app.UseDeveloperExceptionPage(); 
+                app.UseSwagger(); 
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "back_end v1")); 
             }
 
-            app.UseHttpsRedirection(); // -> Este es otro middleware
+            app.UseHttpsRedirection(); 
 
-            app.UseRouting();  // -> Este es otro middleware
-
-            app.UseResponseCaching(); // -> Este es otro middleware
+            app.UseRouting();  
 
             app.UseAuthentication();
 
-            app.UseAuthorization();  // -> Este es otro middleware; si np pasa este middleware, no se procesa el siguiente.
+            app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>  // -> Este es otro middleware
+            app.UseEndpoints(endpoints =>  
             {
                 endpoints.MapControllers(); 
             });

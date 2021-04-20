@@ -1,6 +1,5 @@
 ﻿using back_end.Entidades;
 using back_end.Filtros;
-using back_end.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,44 +21,24 @@ namespace back_end.Controllers
     // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de controlador (sin autorización, no permite acciones)
     public class GenerosController: ControllerBase
     {
-        private readonly IRepositorio repositorio;
-        private readonly WeatherForecastController weatherForecastController;
         private readonly ILogger<GenerosController> logger;
 
-        public GenerosController(IRepositorio repositorio, 
-                                WeatherForecastController weatherForecastController,
-                                ILogger<GenerosController> logger)
+        public GenerosController(ILogger<GenerosController> logger)
         {
-            this.repositorio = repositorio;
-            this.weatherForecastController = weatherForecastController;
             this.logger = logger;
         }
 
         // Acción(es) que va a responder cuando se le haga una petición http al endpoint, el configurado en Route(..)
 
-
         // Podemos tener varias anotaciones por acción
         [HttpGet] // responderá a la URL 'api/generos'
-        [HttpGet("listado")] // >> regla de ruteo, que responderá a la URL 'api/generos/listado'
-        [HttpGet("/listadogeneros")] // >> regla de ruteo, que responderá a la URL 'https://localhost:44315/listadogeneros' (debido al / inicial, que no hace falta todo el Route)
-        // [ResponseCache(Duration = 60)] // Aquí estamos aplicando un filtro (se aplicará sólo a esta acción). No funciona cuando en la cabecera se incluye Authorization
-        // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de acción
-        [ServiceFilter(typeof(MiFiltroDeAccion))]  // ServiceFilter permite inicializar un servicio y todas sus dependencias (p.e, para filtros personalizados)
         public ActionResult<List<Genero>> Get()
         {
-            logger.LogInformation("Vamos a mostrar los géneros");
-            return repositorio.ObtenerTodosLosGeneros();
-        }
-
-
-        [HttpGet("guid")] // api/generos/guid
-        public ActionResult<Guid> GetGUID()
-        {
-            // return repositorio.ObtenerGUID();
-            return Ok(new { GUID_GenerosController = repositorio.ObtenerGUID(),
-                            GUID_WeatherForecastController = weatherForecastController.ObtenerGUIDWeatherForecastController()
-            });
-
+            return new List<Genero>()
+            {
+                new Genero(){Id = 1, Nombre = "Comedia" },
+                new Genero(){Id = 2, Nombre = "Acción" }
+            };
         }
 
 
@@ -67,50 +46,30 @@ namespace back_end.Controllers
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
         // {id} indica que estamos configurando una variable en la URL. 
         [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
-        public async Task<ActionResult<Genero>> Get(int Id, [FromHeader] string nombre) //  [BindRequired, FromHeader] string nombre
+        public async Task<ActionResult<Genero>> Get(int Id) //  [BindRequired, FromHeader] string nombre
         {
-            /* Esta comprobación (que se tendría que repetir en todos los métodos del endpoint) ya no es necesaria cuando se incluye [ApiController] >>
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); // >> Retorna a la petición un 'error 400' para indicar al usuario qué reglas de validación no ha cumplido
-            }
-            */
-
-            logger.LogDebug($"Obteniendo unn género por el Id {Id}");
-
-            var genero = await repositorio.ObtenerPorId(Id);
-
-            if (genero == null)
-            {
-                // Esto de capturar las excepciones de manera global es muy útil en producción (se puede guardar en BDD, en fichero log, etc...)
-                throw new ApplicationException($"*No* se pudo encontrar el género con Id {Id}");  
-                logger.LogWarning($"No se pudo encontrar el género con Id {Id}");
-                return NotFound(); // para utilizar esta llamada, hay que heredar de la Class 'ControllerBase'
-            }
-
-            return genero;
+            throw new NotImplementedException();
         }
 
 
         [HttpPost]
         public ActionResult Post([FromBody] Genero genero)
         {
-            repositorio.CrearGenero(genero);
-            return NoContent();
+            throw new NotImplementedException();
         }
 
 
         [HttpPut]
         public ActionResult Put([FromBody] Genero genero)
         {
-            return NoContent();
+            throw new NotImplementedException();
         }
 
 
         [HttpDelete]
         public void Delete()
         {
-
+            throw new NotImplementedException();
         }
 
     }
