@@ -1,4 +1,5 @@
 ﻿using back_end.Entidades;
+using back_end.Filtros;
 using back_end.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +19,7 @@ namespace back_end.Controllers
 
     [Route("api/generos")] // > La ruta del endpoint (Por convención, la ruta de los endpoints comienzan con la 'api/')
     [ApiController] // con este atributo, se controlan las reglas de validación (devuelve los errores a quien hizo Request) de una manera ¡transparente!
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de controlador (sin autorización, no permite acciones)
+    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de controlador (sin autorización, no permite acciones)
     public class GenerosController: ControllerBase
     {
         private readonly IRepositorio repositorio;
@@ -43,6 +44,7 @@ namespace back_end.Controllers
         [HttpGet("/listadogeneros")] // >> regla de ruteo, que responderá a la URL 'https://localhost:44315/listadogeneros' (debido al / inicial, que no hace falta todo el Route)
         // [ResponseCache(Duration = 60)] // Aquí estamos aplicando un filtro (se aplicará sólo a esta acción). No funciona cuando en la cabecera se incluye Authorization
         // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de acción
+        [ServiceFilter(typeof(MiFiltroDeAccion))]  // ServiceFilter permite inicializar un servicio y todas sus dependencias (p.e, para filtros personalizados)
         public ActionResult<List<Genero>> Get()
         {
             logger.LogInformation("Vamos a mostrar los géneros");
@@ -80,6 +82,8 @@ namespace back_end.Controllers
 
             if (genero == null)
             {
+                // Esto de capturar las excepciones de manera global es muy útil en producción (se puede guardar en BDD, en fichero log, etc...)
+                throw new ApplicationException($"*No* se pudo encontrar el género con Id {Id}");  
                 logger.LogWarning($"No se pudo encontrar el género con Id {Id}");
                 return NotFound(); // para utilizar esta llamada, hay que heredar de la Class 'ControllerBase'
             }

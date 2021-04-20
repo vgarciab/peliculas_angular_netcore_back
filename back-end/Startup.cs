@@ -1,4 +1,5 @@
 using back_end.Controllers;
+using back_end.Filtros;
 using back_end.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -58,8 +59,16 @@ namespace back_end
             services.AddSingleton<IRepositorio, RepositorioEnMemoria>();  // >> Singleton. Inyección de dependencias.
             // services.AddScoped<IRepositorio, RepositorioEnMemoria>();  // >> Singleton. Inyección de dependencias.
             services.AddScoped<WeatherForecastController>(); // --> Modo de inyectar una clase que no tiene Inteface
+            services.AddTransient<MiFiltroDeAccion>(); // -->Inyección de dependencias.
 
-            services.AddControllers();
+
+            services.AddControllers(options =>
+            {
+                // Filtro de excepción registrado a nivel global de nuestra aplicación.
+                // No importa dónde ocurra el error, que éste será capturado por medio de este filtro personalizado.
+                options.Filters.Add(typeof(FiltroDeExcepcion)); 
+            });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "back_end", Version = "v1" });
