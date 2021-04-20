@@ -1,5 +1,6 @@
 using back_end.Controllers;
 using back_end.Repositorios;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +31,11 @@ namespace back_end
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.AddResponseCaching(); // Activar el caché en nuestra aplicación.
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+
+
             // Existen tres tipos de vida o ciclos de vida que puede tener un servicio:
             //   -> (Add)Transient, es el tiempo más corte de vida que le podemos dar a un servicio, y significa que cada vez que pidamos, por ejemplo,
             //            una instancia del servicio de 'IRepositorio', vamos a tener una nueva estancia de este RepositorioEnMemoria>() (una instancia distinta).
@@ -114,6 +120,10 @@ namespace back_end
             app.UseHttpsRedirection(); // -> Este es otro middleware
 
             app.UseRouting();  // -> Este es otro middleware
+
+            app.UseResponseCaching(); // -> Este es otro middleware
+
+            app.UseAuthentication();
 
             app.UseAuthorization();  // -> Este es otro middleware; si np pasa este middleware, no se procesa el siguiente.
 

@@ -1,5 +1,7 @@
 ﻿using back_end.Entidades;
 using back_end.Repositorios;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
@@ -16,6 +18,7 @@ namespace back_end.Controllers
 
     [Route("api/generos")] // > La ruta del endpoint (Por convención, la ruta de los endpoints comienzan con la 'api/')
     [ApiController] // con este atributo, se controlan las reglas de validación (devuelve los errores a quien hizo Request) de una manera ¡transparente!
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de controlador (sin autorización, no permite acciones)
     public class GenerosController: ControllerBase
     {
         private readonly IRepositorio repositorio;
@@ -38,6 +41,8 @@ namespace back_end.Controllers
         [HttpGet] // responderá a la URL 'api/generos'
         [HttpGet("listado")] // >> regla de ruteo, que responderá a la URL 'api/generos/listado'
         [HttpGet("/listadogeneros")] // >> regla de ruteo, que responderá a la URL 'https://localhost:44315/listadogeneros' (debido al / inicial, que no hace falta todo el Route)
+        // [ResponseCache(Duration = 60)] // Aquí estamos aplicando un filtro (se aplicará sólo a esta acción). No funciona cuando en la cabecera se incluye Authorization
+        // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de acción
         public ActionResult<List<Genero>> Get()
         {
             logger.LogInformation("Vamos a mostrar los géneros");
