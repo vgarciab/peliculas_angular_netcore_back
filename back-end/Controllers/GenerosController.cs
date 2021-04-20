@@ -2,6 +2,7 @@
 using back_end.Repositorios;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,11 +20,15 @@ namespace back_end.Controllers
     {
         private readonly IRepositorio repositorio;
         private readonly WeatherForecastController weatherForecastController;
+        private readonly ILogger<GenerosController> logger;
 
-        public GenerosController(IRepositorio repositorio, WeatherForecastController weatherForecastController)
+        public GenerosController(IRepositorio repositorio, 
+                                WeatherForecastController weatherForecastController,
+                                ILogger<GenerosController> logger)
         {
             this.repositorio = repositorio;
             this.weatherForecastController = weatherForecastController;
+            this.logger = logger;
         }
 
         // Acción(es) que va a responder cuando se le haga una petición http al endpoint, el configurado en Route(..)
@@ -35,6 +40,7 @@ namespace back_end.Controllers
         [HttpGet("/listadogeneros")] // >> regla de ruteo, que responderá a la URL 'https://localhost:44315/listadogeneros' (debido al / inicial, que no hace falta todo el Route)
         public ActionResult<List<Genero>> Get()
         {
+            logger.LogInformation("Vamos a mostrar los géneros");
             return repositorio.ObtenerTodosLosGeneros();
         }
 
@@ -54,7 +60,7 @@ namespace back_end.Controllers
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
         // {id} indica que estamos configurando una variable en la URL. 
         [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
-        public async Task<ActionResult<Genero>> Get(int Id, [BindRequired, FromHeader] string nombre)
+        public async Task<ActionResult<Genero>> Get(int Id, [FromHeader] string nombre) //  [BindRequired, FromHeader] string nombre
         {
             /* Esta comprobación (que se tendría que repetir en todos los métodos del endpoint) ya no es necesaria cuando se incluye [ApiController] >>
             if (!ModelState.IsValid)
@@ -63,11 +69,13 @@ namespace back_end.Controllers
             }
             */
 
+            logger.LogDebug($"Obteniendo unn género por el Id {Id}");
 
             var genero = await repositorio.ObtenerPorId(Id);
 
             if (genero == null)
             {
+                logger.LogWarning($"No se pudo encontrar el género con Id {Id}");
                 return NotFound(); // para utilizar esta llamada, hay que heredar de la Class 'ControllerBase'
             }
 
