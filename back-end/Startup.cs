@@ -2,6 +2,7 @@ using back_end.Controllers;
 using back_end.Repositorios;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,24 +61,65 @@ namespace back_end
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        // Esta es nuestra tubería de procesos (HTTP pipeline)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
-            if (env.IsDevelopment())
+            // Cada uno los métodos de app. es un middleware. El orden en que aparecen es  importante, puesto que un middleware envía info al siguiente
+            //  (es decir, son procesos encadenados) 
+            // Los middleware que empiezan por 'Use...', no detienen el proceso
+
+
+            // >>> INI. A modo de ejemplo, vamos a guardar en un Log todas las peticiones HTTP realizadas por los clientes: 
+            //          Es decir, estamos aquí utilizando nuestro propio middleware para mostrar en la consola todas las respuestas HTTP de nuestra aplicación.
+            app.Use(async (context, next) =>
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "back_end v1"));
+                using (var swapStream = new MemoryStream())
+                {
+                    var respuestaOriginal = context.Response.Body;
+                    context.Response.Body = swapStream;
+
+                    await next.Invoke();
+
+                    swapStream.Seek(0, SeekOrigin.Begin);
+                    string respuesta = new StreamReader(swapStream).ReadToEnd();
+                    swapStream.Seek(0, SeekOrigin.Begin);
+
+                    await swapStream.CopyToAsync(respuestaOriginal);
+                    context.Response.Body = respuestaOriginal;
+
+                    logger.LogInformation(respuesta);
+                }
+            });
+            // <<< FIN. A modo de ejemplo, vamos a guardar en un Log todas las peticiones HTTP realizadas por los clientes: 
+
+            app.Map("/mapa1", (app) => // Con esto estamos utizando branching; ejecutar el middleware si el usuario accede a una URL o endpoint específico (p.e.)
+            {
+                // Si entra aquí, en este endpoint: (https://localhost:44315/mapa1), se está interceptando el pipilene (o tubería de procesos)
+                app.Run(async context =>
+                {
+                    
+                    await context.Response.WriteAsync("Estoy interceptando el pipeline");
+                    // Una vez ejecutado este middleware, se termina el pipeline(con ello el programa) y los siguientes middleware no son ejecutados.
+                });
+            });
+
+
+            if (env.IsDevelopment())
+            {  // Si estamosen desarrollo, utilizamos estos tres middleware en nuestra tubería de procesos.
+                app.UseDeveloperExceptionPage();  // -> Este es un middleware
+                app.UseSwagger(); // -> Este es otro middleware
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "back_end v1")); // -> Este es otro middleware
             }
 
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection(); // -> Este es otro middleware
 
-            app.UseRouting();
+            app.UseRouting();  // -> Este es otro middleware
 
-            app.UseAuthorization();
+            app.UseAuthorization();  // -> Este es otro middleware; si np pasa este middleware, no se procesa el siguiente.
 
-            app.UseEndpoints(endpoints =>
+            app.UseEndpoints(endpoints =>  // -> Este es otro middleware
             {
-                endpoints.MapControllers();
+                endpoints.MapControllers(); 
             });
         }
     }
