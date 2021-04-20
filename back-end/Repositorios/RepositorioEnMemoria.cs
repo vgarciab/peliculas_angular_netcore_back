@@ -17,7 +17,13 @@ namespace back_end.Repositorios
                 new Genero(){Id = 1, Nombre = "Comedia" },
                 new Genero(){Id = 2, Nombre = "Acción" }
             };
+
+            _guid = Guid.NewGuid();
         }
+
+
+        public Guid _guid; // --> Esto será un campo
+
 
         public List<Genero> ObtenerTodosLosGeneros()
         {
@@ -25,11 +31,29 @@ namespace back_end.Repositorios
         }
 
 
-
         public async Task<Genero> ObtenerPorId(int Id)
         {
             await Task.Delay(1); // Task.Delay(TimeSpan.FromSeconds(1));
             return _generos.FirstOrDefault(x => x.Id == Id);
         }
+
+
+        public Guid ObtenerGUID()
+        {
+            return _guid;
+
+        }
+
+        public void CrearGenero(Genero genero)
+        {
+            genero.Id = _generos.Count() + 1;
+            _generos.Add(genero);
+        }
+        
+
+
     }
+
+
+
 }

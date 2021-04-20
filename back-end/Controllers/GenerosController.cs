@@ -18,10 +18,12 @@ namespace back_end.Controllers
     public class GenerosController: ControllerBase
     {
         private readonly IRepositorio repositorio;
+        private readonly WeatherForecastController weatherForecastController;
 
-        public GenerosController(IRepositorio repositorio)
+        public GenerosController(IRepositorio repositorio, WeatherForecastController weatherForecastController)
         {
             this.repositorio = repositorio;
+            this.weatherForecastController = weatherForecastController;
         }
 
         // Acción(es) que va a responder cuando se le haga una petición http al endpoint, el configurado en Route(..)
@@ -35,6 +37,18 @@ namespace back_end.Controllers
         {
             return repositorio.ObtenerTodosLosGeneros();
         }
+
+
+        [HttpGet("guid")] // api/generos/guid
+        public ActionResult<Guid> GetGUID()
+        {
+            // return repositorio.ObtenerGUID();
+            return Ok(new { GUID_GenerosController = repositorio.ObtenerGUID(),
+                            GUID_WeatherForecastController = weatherForecastController.ObtenerGUIDWeatherForecastController()
+            });
+
+        }
+
 
 
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
@@ -64,6 +78,7 @@ namespace back_end.Controllers
         [HttpPost]
         public ActionResult Post([FromBody] Genero genero)
         {
+            repositorio.CrearGenero(genero);
             return NoContent();
         }
 
