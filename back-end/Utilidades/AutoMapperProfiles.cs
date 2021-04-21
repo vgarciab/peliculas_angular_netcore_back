@@ -12,6 +12,7 @@ namespace back_end.Utilidades
     {
         public AutoMapperProfiles()
         {
+            CreateMap<Genero, GeneroDTO>().ReverseMap(); // Con esto ya tenemos el mapeo. (con .ReverseMap() indicamos que sea de doble vía.
             CreateMap<GeneroCreacionDTO, Genero>(); // No es necesario ReverseMap porque nunca va a ser necesario un mapeo en sentido contrario.
 
         }
