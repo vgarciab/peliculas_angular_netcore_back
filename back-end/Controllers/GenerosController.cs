@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using back_end.DTOs;
+using AutoMapper;
 
 namespace back_end.Controllers
 {
@@ -24,20 +26,51 @@ namespace back_end.Controllers
     {
         private readonly ILogger<GenerosController> logger;
         private readonly AplicationDbContext context;
+        private readonly IMapper mapper;
+        private object generoCreacionDTO;
 
-        public GenerosController(ILogger<GenerosController> logger, AplicationDbContext context)
+        public GenerosController(ILogger<GenerosController> logger, AplicationDbContext context, IMapper mapper)
         {
             this.logger = logger;
             this.context = context;
+            this.mapper = mapper;
         }
 
         // Acción(es) que va a responder cuando se le haga una petición http al endpoint, el configurado en Route(..)
 
         // Podemos tener varias anotaciones por acción
-        [HttpGet] // responderá a la URL 'api/generos'
-        public async Task<ActionResult<List<Genero>>> Get()
+        [HttpGet] // responderá a la URL: 'api/generos'
+        public async Task<ActionResult<List<GeneroDTO>>> Get()
         {
-            return await context.Generos.ToListAsync();
+            var generos = await context.Generos.ToListAsync();
+
+            // Ahora se trata de mapear generos hacia generosDTO
+            /*
+               Se puede hacer el *****mapeo manual***** >>>
+                   (el problema de este sistema es que si en la Class Genero se añade otra propiedad, habrá que hacer los mismo
+                   en la Class GeneroDTO y, ADEMÁS, en todo el código dónde se haga:
+                                '.Add(new GeneroDTO() { Id = genero.Id, Nombre = genero.Nombre, NuevaPropiedad = genero.NuevaPropiedad });',
+                   siendo preciso añadir esa nueva propiedad (en el ejemplo, 'NuevaPropiedad' al mapear manualmente el objeto. Es propenso a errores.
+                   
+
+                    var resultado = new List<GeneroDTO>();
+                    foreach (var genero in generos)
+                    {
+                        resultado.Add(new GeneroDTO() { Id = genero.Id, Nombre = genero.Nombre });
+
+                    }
+                    return resultado;
+
+            */
+
+
+            // O se puede hacer un mapeo más eficiente con la librería ****AutoMapper**** (mapeo objeto a objeto)
+            return mapper.Map<List<GeneroDTO>>(generos);
+
+            
+
+
+
         }
 
 
@@ -52,11 +85,12 @@ namespace back_end.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] Genero genero)
-        {
+        public async Task<ActionResult> Post([FromBody] GeneroCreacionDTO generoCreacionDTO)
+        {   
+            var genero = mapper.Map<GeneroDTO>(generoCreacionDTO);
             context.Add(genero);
             await context.SaveChangesAsync();
-            return NoContent();
+            return NoContent();  // retornamos un 204
         }
 
 
