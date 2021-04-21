@@ -44,7 +44,8 @@ namespace back_end
                 options.AddDefaultPolicy(builder =>
                 {
                     // Es *importante* no colocar '/' al final de la cadena URL, o de lo contrario no funcionará.
-                    builder.WithOrigins(frontendURL).AllowAnyMethod().AllowAnyHeader();
+                    builder.WithOrigins(frontendURL).AllowAnyMethod().AllowAnyHeader()
+                        .WithExposedHeaders(new string[] { "cantidadTotalRegistros" });
                 });
             });
 

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using back_end.DTOs;
 using AutoMapper;
+using back_end.Utilidades;
 
 namespace back_end.Controllers
 {
@@ -40,13 +41,19 @@ namespace back_end.Controllers
 
         // Podemos tener varias anotaciones por acción
         [HttpGet] // responderá a la URL: 'api/generos'
-        public async Task<ActionResult<List<GeneroDTO>>> Get()
+        public async Task<ActionResult<List<GeneroDTO>>> Get([FromQuery] PaginacionDTO paginacionDTO)
         {
-            var generos = await context.Generos.ToListAsync();
+            var queryable = context.Generos.AsQueryable();
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+            var generos =await queryable.OrderBy(x => x.Nombre).Paginar(paginacionDTO).ToListAsync();
 
-            // Ahora se trata de mapear generos hacia generosDTO
+            // Ahora se trata de mapear generos hacia generosDTO:
+            // Se puede hacer un mapeo más eficiente con la librería ****AutoMapper**** (mapeo objeto a objeto)
+            return mapper.Map<List<GeneroDTO>>(generos);
+
+
             /*
-               Se puede hacer el *****mapeo manual***** >>>
+               O se puede hacer el *****mapeo manual***** >>>
                    (el problema de este sistema es que si en la Class Genero se añade otra propiedad, habrá que hacer los mismo
                    en la Class GeneroDTO y, ADEMÁS, en todo el código dónde se haga:
                                 '.Add(new GeneroDTO() { Id = genero.Id, Nombre = genero.Nombre, NuevaPropiedad = genero.NuevaPropiedad });',
@@ -62,13 +69,6 @@ namespace back_end.Controllers
                     return resultado;
 
             */
-
-
-            // O se puede hacer un mapeo más eficiente con la librería ****AutoMapper**** (mapeo objeto a objeto)
-            return mapper.Map<List<GeneroDTO>>(generos);
-
-            
-
 
 
         }
