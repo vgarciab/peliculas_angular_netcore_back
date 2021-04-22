@@ -78,9 +78,16 @@ namespace back_end.Controllers
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
         // {id} indica que estamos configurando una variable en la URL. 
         [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
-        public async Task<ActionResult<Genero>> Get(int Id) //  [BindRequired, FromHeader] string nombre
+        public async Task<ActionResult<GeneroDTO>> Get(int Id) //  [BindRequired, FromHeader] string nombre
         {
-            throw new NotImplementedException();
+            var genero = await context.Generos.FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (genero == null)
+            {
+                return NotFound();
+            }
+
+            return mapper.Map<GeneroDTO>(genero);
         }
 
 
@@ -94,10 +101,20 @@ namespace back_end.Controllers
         }
 
 
-        [HttpPut]
-        public ActionResult Put([FromBody] Genero genero)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int Id, [FromBody] GeneroCreacionDTO generoCreacionDTO)
         {
-            throw new NotImplementedException();
+            var genero = await context.Generos.FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (genero == null)
+            {
+                return NotFound();
+            }
+
+            genero = mapper.Map(generoCreacionDTO, genero);
+
+            await context.SaveChangesAsync();
+            return NoContent();
         }
 
 
