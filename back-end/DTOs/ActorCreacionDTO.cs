@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -16,6 +17,6 @@ namespace back_end.DTOs
 
         public DateTime FechaNacimiento { get; set; }
 
-        // public string Foto { get; set; }
+        public IFormFile Foto { get; set; }
     }
 }

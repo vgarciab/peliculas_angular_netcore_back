@@ -23,12 +23,14 @@ namespace back_end.Controllers
         }
 
 
+        // En vez de utilizar en el parámetro [FromBody], se usará [FromForm] porque 
+        // vamos a poder enviar, entre otras cosas, la foto del actor.
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] ActorCreacionDTO actorCreacionDTO)
+                public async Task<ActionResult> Post([FromForm] ActorCreacionDTO actorCreacionDTO)
         {
-            var actor = mapper.Map<Actor>(actorCreacionDTO);
-            context.Add(actor);
-            await context.SaveChangesAsync();
+            //var actor = mapper.Map<Actor>(actorCreacionDTO);
+            //context.Add(actor);
+            //await context.SaveChangesAsync();
             return NoContent();  // retornamos un 204
         }
 
