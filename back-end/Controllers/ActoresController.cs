@@ -36,17 +36,14 @@ namespace back_end.Controllers
         {
             var actor = mapper.Map<Actor>(actorCreacionDTO);
 
-            /*
-            // INI >> Para almacenar la foto en **Azure storage**
+            // Para guardar una imagen (foto) localmente o en en **Azure storage**
+            // (al estar inyectado en el contructor a través de almacenadorArchivos, llamará al que se haya definido en Startup.cs:
+            // services.AddTransient<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();  ó services.AddTransient<IAlmacenadorArchivos, AlmacenadorAzureStorage>();
             if (actorCreacionDTO.Foto != null)
             {
-                // GuardarArchivo(..) devuelve un string, que lo asignamos a .Foto
-                actor.Foto =   
-                    await this.almacenadorArchivos.GuardarArchivo(this.contenedor, actorCreacionDTO.Foto);
-
+                // GuardarArchivo(..) devuelve un string, que lo asignamos a .Foto (este string es el que se almacenará en la BDD)
+                actor.Foto = await almacenadorArchivos.GuardarArchivo(contenedor, actorCreacionDTO.Foto);
             }
-            // << FIN  Para almacenar la foto en Azure storage
-            */
 
             context.Add(actor);
             await context.SaveChangesAsync();

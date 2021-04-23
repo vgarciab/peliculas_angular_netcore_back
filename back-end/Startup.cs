@@ -35,7 +35,11 @@ namespace back_end
         {
             services.AddAutoMapper(typeof(Startup));
 
-            services.AddTransient<IAlmacenadorArchivos, AlmacenadorAzureStorage>();
+            // services.AddTransient<IAlmacenadorArchivos, AlmacenadorAzureStorage>(); //  Para Azure  
+            services.AddTransient<IAlmacenadorArchivos, AlmacenadorArchivosLocal>(); // Para guardar imagen localmente 
+
+            services.AddHttpContextAccessor();
+
 
             services.AddDbContext<AplicationDbContext>(
                 options => options.UseSqlServer(Configuration.GetConnectionString("defaultConnection"))
@@ -77,7 +81,9 @@ namespace back_end
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "back_end v1")); 
             }
 
-            app.UseHttpsRedirection(); 
+            app.UseHttpsRedirection();
+
+            app.UseStaticFiles(); // Middleware que nos permite servir archivos estáticos
 
             app.UseRouting();
 
