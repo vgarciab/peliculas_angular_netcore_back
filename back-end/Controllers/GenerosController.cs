@@ -28,7 +28,6 @@ namespace back_end.Controllers
         private readonly ILogger<GenerosController> logger;
         private readonly AplicationDbContext context;
         private readonly IMapper mapper;
-        private object generoCreacionDTO;
 
         public GenerosController(ILogger<GenerosController> logger, AplicationDbContext context, IMapper mapper)
         {

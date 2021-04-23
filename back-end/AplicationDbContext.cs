@@ -14,6 +14,7 @@ namespace back_end
         }
 
         public DbSet<Genero> Generos { get; set; }
+        public DbSet<Actor> Actores { get; set; }
 
     }
 }
