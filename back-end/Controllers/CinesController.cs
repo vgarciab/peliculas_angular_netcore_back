@@ -37,6 +37,20 @@ namespace back_end.Controllers
             return mapper.Map<List<CineDTO>>(cines);
         }
 
+        [HttpGet("{Id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
+        public async Task<ActionResult<CineDTO>> Get(int Id) //  [BindRequired, FromHeader] string nombre
+        {
+            var cine = await context.Cines.FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (cine == null)
+            {
+                return NotFound();
+            }
+
+            return mapper.Map<CineDTO>(cine);
+        }
+
+
 
 
         [HttpPost]
@@ -47,6 +61,24 @@ namespace back_end.Controllers
             await context.SaveChangesAsync();
             return NoContent();  // retornamos un 204
         }
+
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int Id, [FromBody] CineCreacionDTO cineCreacionDTO)
+        {
+            var cine = await context.Cines.FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (cine == null)
+            {
+                return NotFound();
+            }
+
+            cine = mapper.Map(cineCreacionDTO, cine);
+
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
+
 
 
         [HttpDelete("{id:int}")]
