@@ -44,6 +44,20 @@ namespace back_end.Controllers
 
 
 
+        [HttpGet("{id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
+        public async Task<ActionResult<ActorDTO>> Get(int id) //  [BindRequired, FromHeader] string nombre
+        {
+            var actor = await context.Actores.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (actor == null)
+            {
+                return NotFound();
+            }
+
+            return mapper.Map<ActorDTO>(actor);
+        }
+
+
         // En vez de utilizar en el parámetro [FromBody], se usará [FromForm] porque 
         // vamos a poder enviar, entre otras cosas, la foto del actor.
         [HttpPost]
@@ -67,18 +81,50 @@ namespace back_end.Controllers
 
 
 
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int id, [FromForm] ActorCreacionDTO actorCreacionDTO)
+        {
+            var actor = await context.Actores.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (actor == null)
+            {
+                return NotFound();
+            }
+
+            actor = mapper.Map(actorCreacionDTO, actor);
+
+
+            if (actorCreacionDTO.Foto != null)
+            {
+                // GuardarArchivo(..) devuelve un string, que lo asignamos a .Foto (este string es el que se almacenará en la BDD)
+                actor.Foto = await almacenadorArchivos.EditarArchivo(contenedor, actorCreacionDTO.Foto, actor.Foto);
+            }
+
+
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
+
+
+
+
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var existe = await context.Actores.AnyAsync(x => x.Id == id);
+            var actor = await context.Actores.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (!existe)
+            if (actor == null)
             {
                 return NotFound();
             }
 
             context.Remove(new Actor() { Id = id });
             await context.SaveChangesAsync();
+
+            await almacenadorArchivos.BorrarArchivo(actor.Foto, contenedor);
+
             return NoContent();
         }
 
