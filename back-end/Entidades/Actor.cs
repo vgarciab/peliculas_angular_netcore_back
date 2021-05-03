@@ -19,5 +19,9 @@ namespace back_end.Entidades
         public DateTime FechaNacimiento { get; set; }
 
         public string  Foto { get; set; }
+
+        // Propiedad de navegación para Actores -> Peliculas. Cuando se traiga una actor (GET), poder ver sus películas en las que ha actuado.
+        public List<PeliculasActores> PeliculasActores { get; set; }
+
     }
 }

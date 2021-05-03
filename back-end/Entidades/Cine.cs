@@ -19,5 +19,9 @@ namespace back_end.Entidades
         // Utiliza la librería (paquete NuGet microsoft.entityframeworkcore.sqlserver.nettopologysuite
         public Point Ubicacion { get; set; }
 
+        // Propiedad de navegación para Cines -> Peliculas. Cuando se traiga un Cine (GET), poder las películas que proyecta.
+        public List<PeliculasCines> PeliculasCines { get; set; }
+
+
     }
 }
