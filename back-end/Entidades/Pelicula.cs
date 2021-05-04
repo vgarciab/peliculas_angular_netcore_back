@@ -16,7 +16,7 @@ namespace back_end.Entidades
 
         public string Resumen { get; set; }
 
-        public string Traile { get; set; }
+        public string Trailer { get; set; }
 
         public bool EnCines { get; set; }
 

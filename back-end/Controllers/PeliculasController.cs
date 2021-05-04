@@ -46,6 +46,31 @@ namespace back_end.Controllers
         }
 
 
+        [HttpGet("{id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
+        public async Task<ActionResult<PeliculaDTO>> Get(int id) 
+        {
+            var pelicula = await context.Peliculas
+                    .Include(x => x.PeliculasGeneros).ThenInclude(x => x.Genero)
+                    .Include(x => x.PeliculasActores).ThenInclude(x => x.Actor)
+                    .Include(x => x.PeliculasCines).ThenInclude(x => x.Cine)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+
+            if (pelicula == null)
+            {
+                return NotFound();
+            }
+
+            var dto = mapper.Map<PeliculaDTO>(pelicula);
+            dto.Actores = dto.Actores.OrderBy(x => x.Orden).ToList();
+
+            return dto;
+        }
+
+
+
+
+
 
         [HttpPost]
         // Aquí se utiliza [FromFrom] para poder recibir el poster (imagen) de la película
