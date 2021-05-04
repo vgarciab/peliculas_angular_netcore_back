@@ -13,7 +13,7 @@ namespace back_end.DTOs
     {
         [Required]
         [StringLength(maximumLength: 300)]
-        public string Nombre { get; set; }
+        public string Titulo { get; set; }
 
         public string Resumen { get; set; }
 

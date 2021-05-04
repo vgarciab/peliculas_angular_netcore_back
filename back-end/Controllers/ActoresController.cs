@@ -81,6 +81,24 @@ namespace back_end.Controllers
 
 
 
+        [HttpPost("buscarPorNombre")]
+        public async Task<ActionResult<List<PeliculaActorDTO>>> BuscarPorNombre([FromBody] string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                return new List<PeliculaActorDTO>();
+            }
+
+            return await context.Actores
+                            .Where(x => x.Nombre.Contains(nombre))
+                            .Select(x => new PeliculaActorDTO { Id = x.Id, Nombre = x.Nombre, Foto = x.Foto })
+                            .Take(5)
+                            .ToListAsync();
+        }
+
+
+
+
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Put(int id, [FromForm] ActorCreacionDTO actorCreacionDTO)
         {

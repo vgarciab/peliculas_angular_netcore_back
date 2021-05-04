@@ -3,6 +3,7 @@ using back_end.DTOs;
 using back_end.Entidades;
 using back_end.Utilidades;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ using System.Threading.Tasks;
 
 namespace back_end.Controllers
 {
+    [ApiController]
+    [Route("api/peliculas")]
     public class PeliculasController: ControllerBase
     {
         private readonly AplicationDbContext context;
@@ -24,6 +27,24 @@ namespace back_end.Controllers
             // Necesitamos IAlmacenadorArchivos porque las películas van a tener un poster, que será una imagen.
             this.almacenadorArchivos = almacenadorArchivos;
         }
+
+
+        [HttpGet("PostGet")] // endpoint responderá a la URL: 'api/postget'
+        public async Task<ActionResult<PeliculasPostGetDTO>> PostGet()
+        {
+            var cines = await context.Cines.ToListAsync();
+            var generos = await context.Generos.ToListAsync();
+
+            var cinesDTO = mapper.Map<List<CineDTO>>(cines);
+            var generosDTO = mapper.Map<List<GeneroDTO>>(generos);
+
+            return new PeliculasPostGetDTO()
+            {
+                Cines = cinesDTO,
+                Generos = generosDTO
+            };
+        }
+
 
 
         [HttpPost]
