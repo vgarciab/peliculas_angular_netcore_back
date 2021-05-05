@@ -46,7 +46,7 @@ namespace back_end.Controllers
         }
 
         // Para obtener los datos de la película, para editarla
-        [HttpGet("PutGet")] // endpoint responderá a la URL: 'api/putget'
+        [HttpGet("PutGet/{id:int}")] // endpoint responderá a la URL: 'api/putget'
         public async Task<ActionResult<PeliculasPutGetDTO>> PutGet(int id)
         {
             var peliculasActionResult = await Get(id);
