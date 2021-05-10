@@ -73,6 +73,13 @@ namespace back_end.Controllers
         }
 
 
+        [HttpGet("todos")]
+        public async Task<ActionResult<List<GeneroDTO>>> Todos()
+        {
+            var generos = await context.Generos.ToListAsync();
+            return mapper.Map<List<GeneroDTO>>(generos);
+        }
+
 
         //>> regla de ruteo; la Web Api responderá a la llamada con 'api/generos/1' (1 ó el Id que le pasemos);
         // {id} indica que estamos configurando una variable en la URL. 
