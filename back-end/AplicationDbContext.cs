@@ -1,4 +1,5 @@
 ﻿using back_end.Entidades;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace back_end
 {
-    public class AplicationDbContext : DbContext
+    public class AplicationDbContext : IdentityDbContext
     {
         public AplicationDbContext(DbContextOptions<AplicationDbContext> options) : base(options)
         {
