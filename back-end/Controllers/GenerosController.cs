@@ -22,7 +22,8 @@ namespace back_end.Controllers
 
     [Route("api/generos")] // > La ruta del endpoint (Por convención, la ruta de los endpoints comienzan con la 'api/')
     [ApiController] // con este atributo, se controlan las reglas de validación (devuelve los errores a quien hizo Request) de una manera ¡transparente!
-    // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] // Filtro a nivel de controlador (sin autorización, no permite acciones)
+    // Filtro a nivel de controlador (sin autorización, no permite acciones)
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "EsAdmin")]
     public class GenerosController: ControllerBase
     {
         private readonly ILogger<GenerosController> logger;
@@ -74,6 +75,7 @@ namespace back_end.Controllers
 
 
         [HttpGet("todos")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<GeneroDTO>>> Todos()
         {
             var generos = await context.Generos.ToListAsync();
