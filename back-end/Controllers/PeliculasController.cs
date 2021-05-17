@@ -2,6 +2,9 @@
 using back_end.DTOs;
 using back_end.Entidades;
 using back_end.Utilidades;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,19 +16,25 @@ namespace back_end.Controllers
 {
     [ApiController]
     [Route("api/peliculas")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PeliculasController: ControllerBase
     {
         private readonly AplicationDbContext context;
         private readonly IMapper mapper;
         private readonly IAlmacenadorArchivos almacenadorArchivos;
+        private readonly UserManager<IdentityUser> userManager;
         private readonly string contenedor = "peliculas"; // Para Azure Storage
 
-        public PeliculasController(AplicationDbContext context, IMapper mapper, IAlmacenadorArchivos almacenadorArchivos)
+        public PeliculasController(AplicationDbContext context, 
+                                    IMapper mapper, 
+                                    IAlmacenadorArchivos almacenadorArchivos,
+                                    UserManager<IdentityUser> userManager)
         {
             this.context = context;
             this.mapper = mapper;
             // Necesitamos IAlmacenadorArchivos porque las películas van a tener un poster, que será una imagen.
             this.almacenadorArchivos = almacenadorArchivos;
+            this.userManager = userManager;
         }
 
 
@@ -115,6 +124,7 @@ namespace back_end.Controllers
 
 
         [HttpGet]
+        [AllowAnonymous] // A pesar del filtro [Authorize(..)] que se aplican a todos los controladores de la clase, aquí pueden consultar usuarios anóninmos.
         public async Task<ActionResult<LandingPageDTO>> Get()
         {
             var top = 6;
@@ -143,6 +153,7 @@ namespace back_end.Controllers
 
 
         [HttpGet("{id:int}")]  // Id:int, es una restricción de variable de ruta, dándole un tipo explícitamente, un entereo, en este caso.
+        [AllowAnonymous] 
         public async Task<ActionResult<PeliculaDTO>> Get(int id) 
         {
             var pelicula = await context.Peliculas
@@ -157,7 +168,34 @@ namespace back_end.Controllers
                 return NotFound();
             }
 
+            var promedioVoto = 0.0;
+            var usuarioVoto = 0;
+
+            if (await context.Ratings.AnyAsync(x => x.PeliculaId == id))
+            {
+                promedioVoto = await context.Ratings.Where(x => x.PeliculaId == id)
+                    .AverageAsync(x => x.Puntuacion);
+
+                if (HttpContext.User.Identity.IsAuthenticated)
+                {
+                    var email = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email").Value;
+                    var usuario = await userManager.FindByEmailAsync(email);
+                    var usuarioId = usuario.Id;
+                    var ratingDB = await context.Ratings
+                        .FirstOrDefaultAsync(x => x.UsuarioId == usuarioId && x.PeliculaId == id);
+
+                    if (ratingDB != null)
+                    {
+                        usuarioVoto = ratingDB.Puntuacion;
+                    }
+                }
+
+            }
+
+
             var dto = mapper.Map<PeliculaDTO>(pelicula);
+            dto.VotoUsuario = usuarioVoto;
+            dto.PromedioVoto = promedioVoto;
             dto.Actores = dto.Actores.OrderBy(x => x.Orden).ToList();
 
             return dto;
@@ -165,6 +203,7 @@ namespace back_end.Controllers
 
 
         [HttpGet("filtrar")]
+        [AllowAnonymous] 
         public async Task<ActionResult<List<PeliculaDTO>>> Filtrar([FromQuery] PeliculasFiltrarDTO peliculasFiltrarDTO)
         {
             var peliculasQueryable = context.Peliculas.AsQueryable();
